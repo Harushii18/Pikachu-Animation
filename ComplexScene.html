@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Subroutine Hieararchy</title>
+
+  <script>
+
+    var canvas;   // The canvas that is used as the drawing surface
+    var graphics; // The 2D graphics context for drawing on the canvas.
+
+    var X_LEFT = -4;    // The xy limits for the coordinate system.
+    var X_RIGHT = 4;
+    var Y_BOTTOM = -3;
+    var Y_TOP = 3;
+
+    var BACKGROUND = "white";  // The display is filled with this color before the scene is drawn.
+
+    var pixelSize;  // The size of one pixel, in the transformed coordinates.
+
+    var frameNumber = 0;  // Current frame number. goes up by one in each frame.
+
+    // TODO:  Define any other necessary state variables.
+    //this is for the animation
+    var blink = 0;
+    var blink2 = 0;
+    var ear = 0;
+    var earup = true;
+    var feet = 0;
+    var tail = 0;
+    var tailmove = true;
+    var feetmove = true;
+    var shippy = 0;
+    var shipmove = true;
+
+    var cloudcount = 0;
+
+    var watercount = 0;
+    var watermove = true;
+
+    var treemove = true;
+    var treeVar = 0;
+    var treenum = 0;
+    var r = 163;
+    var g = 223;
+    var b = 245;
+
+    //make changeable tree colour
+    var treeCol;
+
+
+
+
+    /**
+     *  Responsible for drawing the entire scene.  The display is filled with the background
+     *  color before this function is called.
+     */
+    function drawWorld() {
+
+      // TODO: Draw the content of the scene.
+
+      background();
+      //animate ship
+      graphics.save();
+      graphics.translate(-6.3, 0);
+      if (shipmove) {
+
+        graphics.translate(-0.5 + (0.01 * shippy), 0);
+
+
+        shippy++;
+      }
+      if (shippy == 1400) {
+        //move ship back to starting point
+        shippy = 0;
+      }
+
+      //place ship and pikachu on water
+      ship();
+      pikachu();
+      graphics.restore();
+
+
+    }
+
+    /**
+     * This method is called just before each frame is drawn.  It updates the modeling
+     * transformations of the objects in the scene that are animated.
+     */
+    function updateFrame() {
+      frameNumber++;
+      // TODO: If other updates are needed for the next frame, do them here.
+    }
+
+    // TODO: Define methods for drawing the objects in the scene.
+
+
+    //this creates the background
+    function background() {
+      backgroundColour();
+
+
+      //add clouds, the island and water
+      clouds();
+      island();
+      water();
+
+      graphics.save();
+
+      
+      //animate water ripples
+      waterRippleAnimation();
+      
+
+      //create waves
+      waves();
+      graphics.restore();
+    }
+
+    //animate water ripples
+    function waterRippleAnimation(){
+      if (watercount == 0) {
+        watermove = true;
+
+      }
+      if (watercount == 100) {
+        watermove = false;
+      }
+      if (watermove) {
+        graphics.translate(watercount * 0.005, 0);
+        //var r=163;
+        // var g=223;
+        //var b=245;
+
+        //174, 226, 246
+        //224, 244, 251
+        r = 174;
+        g = 226;
+        b = 245;
+        watercount++;
+      } else {
+        graphics.translate(watercount * 0.005, 0);
+        r = 178;
+        g = 230;
+        b = 249;
+        watercount--;
+      }
+
+    }
+
+
+    function clouds() {
+      //create the multiple clouds in the sky
+      graphics.save();
+      graphics.translate(0.0005 * frameNumber, 0);
+      graphics.save();
+
+      graphics.translate(-3, 0);
+      graphics.scale(-1, 0.5);
+      cloud();
+
+      graphics.translate(1, 1);
+      cloud();
+
+      graphics.translate(2, 0);
+      graphics.scale(1, 1.25);
+      cloud();
+
+      graphics.restore();
+
+
+      graphics.save();
+
+      cloud();
+      graphics.translate(2, -1.2);
+
+      cloud();
+
+      graphics.restore();
+
+
+      graphics.restore();
+    }
+
+    function cloud() {
+      //create an individual cloud
+      graphics.save();
+
+      graphics.lineWidth = 0.05;
+      graphics.beginPath();
+      graphics.translate(0, 2.5);
+      graphics.scale(1.5, 1);
+
+      //move cloud to correct position abd use multiple bezier curves to create cloud
+      graphics.moveTo(0, 0.1);
+      for (var c = 0; c < 20; c++) {
+        graphics.rotate(c * Math.PI / 20);
+        graphics.bezierCurveTo(0.8, 0.1, 0.9, 0.9, 0.6, 0.9);
+      }
+
+
+      graphics.bezierCurveTo(0.5, 0.5, 1, 0.05, 1, 0.1);
+      graphics.fillStyle = "rgb(229, 241, 251)";
+      graphics.fill();
+      graphics.restore();
+    }
+
+    function water() {
+      //creates huge block of blue water
+      graphics.save();
+      graphics.translate(0, -2.75);
+      graphics.scale(10, 4);
+      graphics.fillStyle = "rgb(117, 207, 241)";
+      filledRect();
+      graphics.restore();
+    }
+
+    function waves() {
+      //create multiple ripples on water
+      graphics.save();
+      graphics.save();
+
+      waterwave();
+      graphics.translate(2.5, 0);
+      waterwave();
+
+      graphics.translate(3.5, 0);
+      waterwave();
+
+      graphics.translate(0, -1.5);
+      waterwave();
+
+      graphics.translate(-2.5, 1);
+      waterwave();
+
+
+      graphics.translate(0, -1.25);
+      waterwave();
+      graphics.restore();
+      graphics.save();
+
+      graphics.scale(-5, 1);
+      graphics.translate(4, -1);
+
+      waterwave();
+
+      graphics.restore();
+
+      graphics.restore();
+    }
+
+    function waterwave() {
+      //create an individual ripple on water
+
+      graphics.save();
+
+      graphics.lineWidth = 0.05;
+      graphics.beginPath();
+      graphics.translate(-5.5, -1.05);
+      graphics.scale(3, 0.2);
+
+      graphics.moveTo(0, 0.1);
+      for (var i = 0; i < 10; i++) {
+        graphics.rotate(Math.PI / 3);
+        graphics.bezierCurveTo(0.4, 0.9, 1.8, 0.5, 1.2, 0.2);
+      }
+
+
+      //this code is for changing the colour on movement to a whiter colour
+      graphics.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+      graphics.fill();
+      graphics.restore();
+
+    }
+
+    function island() {
+      //the island only has trees and sand
+      //sand
+      sand();
+
+      //add multiple trees to scene
+      generateTrees();
+
+    }
+
+    function generateTrees() { 
+      //generate trees
+      treenum = 2;
+
+      //this variable changes the colour of the leaves
+      treeCol = "rgb(14, 158, 71)";
+      tree();
+      var i;
+
+      graphics.save();
+      graphics.save();
+      for (i = 0; i < 2; i++) {
+        treenum = 1;
+        treeCol = "rgb(122, 103, 13)";
+        graphics.translate(1, 0.05);
+        tree();
+        treenum = 0;
+        treeCol = "rgb(247, 148, 24)";
+        graphics.translate(1, -0.05);
+        tree();
+        treenum = 2;
+        treeCol = "rgb(183, 78, 38)";
+        graphics.translate(1, -0.05);
+        tree();
+        treenum = 1;
+        treeCol = "rgb(150, 39, 26)";
+        graphics.translate(1, 0.05);
+        tree();
+      }
+      graphics.restore();
+
+      graphics.translate(-1.5, -0.25);
+      graphics.save();
+      for (i = 0; i < 2; i++) {
+        treenum = 1;
+        treeCol = "rgb(122, 103, 13)";
+        graphics.translate(1, 0.05);
+        tree();
+        treenum = 0;
+        treeCol = "rgb(247, 148, 24)";
+        graphics.translate(1, -0.05);
+        tree();
+        treenum = 1;
+        treeCol = "rgb(183, 78, 38)";
+        graphics.translate(1, -0.05);
+        tree();
+        treenum = 2;
+        treeCol = "rgb(150, 39, 26)";
+        graphics.translate(1, 0.05);
+        tree();
+      }
+      graphics.restore();
+
+      graphics.translate(-1.5, -0.25);
+      graphics.save();
+      for (i = 0; i < 2; i++) {
+        treenum = 1;
+        treeCol = "rgb(122, 103, 13)";
+        graphics.translate(1, 0.05);
+        treenum = 2;
+        tree();
+        treeCol = "rgb(247, 148, 24)";
+        graphics.translate(1, -0.05);
+        treenum = 0;
+        tree();
+        treeCol = "rgb(183, 78, 38)";
+        treenum = 1;
+        graphics.translate(1, -0.05);
+        tree();
+        treenum = 2;
+        treeCol = "rgb(150, 39, 26)";
+        graphics.translate(1, 0.05);
+        tree();
+      }
+      graphics.restore();
+
+      graphics.restore();
+
+    }
+
+
+
+    function sand() {
+      //makes ground
+      graphics.save();
+      graphics.translate(0, 0);
+      graphics.scale(10, 1.5);
+      graphics.fillStyle = "rgb(138, 98, 85)";
+      filledRect();
+      graphics.restore();
+
+    }
+
+    function tree() {
+      //creates an individual tree
+
+      graphics.save();
+      treeShadow();
+      treeBark();
+      //changes leaf colour  
+      graphics.fillStyle = treeCol;
+      treeLeaves();
+      graphics.restore();
+    }
+
+    function treeLeaves() {
+      //create tree leaf polygon
+      graphics.save();
+
+      //make trees sway
+      treeAnimation();
+     
+
+      graphics.beginPath();
+      graphics.translate(-3.5, 1);
+      graphics.scale(0.25, 0.25);
+      graphics.moveTo(-3, -1.5);
+      graphics.lineTo(-1.25, 0);
+
+
+      //create jagged edges of leaves
+      graphics.lineTo(-2, 0);
+      graphics.lineTo(-0.5, 1.5);
+      graphics.lineTo(-1, 1.5);
+      graphics.lineTo(0, 3);
+      graphics.lineTo(1, 1.5);
+      graphics.lineTo(0.5, 1.5);
+      graphics.lineTo(2, 0);
+      graphics.lineTo(1.25, 0);
+      graphics.lineTo(3, -1.5);
+
+
+      graphics.closePath();
+
+      graphics.fill();
+      graphics.restore();
+    }
+
+    //animation for trees
+    function treeAnimation(){
+      if (treenum == 1) {
+        if (treemove == false) {
+          graphics.transform(1, 0, 0.005, 1, 0, 0);
+          treeVar--;
+        }
+
+        if (treemove == true) {
+          graphics.transform(1, 0, -0.005, 1, 0, 0);
+          treeVar++;
+        }
+        if (treeVar == 0) {
+          treemove = true;
+        }
+        if (treeVar == 500) {
+          treemove = false;
+        }
+
+      } else if (treenum == 0) {
+        if (treemove == false) {
+          graphics.transform(1, 0, -0.005, 1, 0, 0);
+          treeVar--;
+        }
+
+        if (treemove == true) {
+          graphics.transform(1, 0, 0.005, 1, 0, 0);
+          treeVar++;
+        }
+        if (treeVar == 0) {
+          treemove = true;
+        }
+        if (treeVar == 500) {
+          treemove = false;
+        }
+
+      } else if (treenum == 2) {
+        if (treemove == false) {
+          graphics.transform(1, 0, -0.003, 1, 0, 0);
+          treeVar--;
+        }
+
+        if (treemove == true) {
+          graphics.transform(1, 0, 0.003, 1, 0, 0);
+          treeVar++;
+        }
+        if (treeVar == 0) {
+          treemove = true;
+        }
+        if (treeVar == 500) {
+          treemove = false;
+        }
+      }
+    }
+
+    function treeBark() {
+      //creates tree trunk
+      graphics.save();
+      graphics.translate(-3.5, 0.7);
+      graphics.rotate(Math.PI / 2);
+      graphics.scale(1, 0.25);
+      graphics.fillStyle = "rgb(45, 46, 46)";
+      filledRect();
+
+      //circular bottom of trunk
+      graphics.restore();
+      graphics.save();
+      graphics.translate(-3.5, 0.3);
+      graphics.scale(0.25, 0.1);
+      graphics.translate(0, -1);
+      graphics.fillStyle = "rgb(45, 46, 46)";
+      filledCircle();
+
+      graphics.restore();
+    }
+
+    function treeShadow() {
+      //creates shadow of tree
+      graphics.save();
+      graphics.translate(-3.48, 0.2);
+      graphics.scale(1.5, 0.25);
+      graphics.fillStyle = "rgb(92, 65, 56)";
+      filledCircle();
+      graphics.restore();
+    }
+
+    function backgroundColour() {
+      //bg colour for pikachu
+      graphics.save();
+      graphics.scale(10, 10);
+      graphics.fillStyle = "rgb(0, 180, 256)";
+      filledRect();
+      graphics.restore();
+    }
+
+    function ship() {
+      //create the ice portion pikachu is sitting on
+      graphics.save();
+      graphics.translate(0, -1.5);
+      graphics.fillStyle = "rgb(201, 234, 241)";
+      graphics.scale(5, 1.5);
+      filledCircle();
+      graphics.restore();
+
+      graphics.save();
+      graphics.translate(-1, -1);
+      graphics.fillStyle = "rgb(201, 234, 241)";
+      graphics.scale(1, 1);
+      filledCircle();
+      graphics.restore();
+    }
+
+
+    //==========================PIKACHU=====================================
+    
+    function pikachu() {
+      //creates the whole pikachu
+      pikachuTail();
+      pikachuBody();
+      pikachuFace();
+    }
+
+
+    function pikachuTail() {
+      graphics.save();
+      graphics.fillStyle = "rgb(247, 209, 34)";
+      graphics.translate(0, -0.6);
+      //animate the tail
+      tailAnimation();
+
+       //compile all of pikachu's tail parts together
+      pikTail1();
+      pikTail2();
+      pikTail3();
+      graphics.save();
+      graphics.translate(0.2, 0.35);
+      pikTail2();
+
+      graphics.restore();
+      pikTailEnd();
+      graphics.restore();
+    }
+
+    //animate the tail
+    function tailAnimation(){
+      if (tailmove) {
+        tail++;
+        if (tail == 10) {
+          tailmove = false;
+        }
+      }
+      if (!tailmove) {
+        tail--;
+        if (tail == 0) {
+          tailmove = true;
+        }
+      }
+      graphics.rotate(Math.PI / 100 * 0.3 * tail);
+    }
+
+    function pikTail1() {
+      //a rectangular part of pikachu's tail
+      graphics.save();
+      graphics.translate(0.5, -0.6);
+      graphics.rotate(-Math.PI / 3);
+      graphics.scale(0.25, 0.5);
+      filledRect();
+      graphics.restore();
+    }
+
+    function pikTail2() {
+      //a rectangular part of pikachu's tail
+      graphics.save();
+      graphics.translate(0.64, -0.38);
+      graphics.rotate(-Math.PI);
+      graphics.scale(0.3, 0.4);
+      filledRect();
+      graphics.restore();
+    }
+
+    function pikTail3() {
+      //a rectangular part of pikachu's tail
+      graphics.save();
+      graphics.translate(0.73, -0.2);
+      graphics.rotate(-Math.PI / 3);
+      graphics.scale(0.3, 0.4);
+      filledRect();
+      graphics.restore();
+    }
+
+    function pikTailEnd() {
+      //create last part of pikachu's tail
+      graphics.save();
+      graphics.beginPath();
+      graphics.translate(0.99, 0.2);
+      graphics.rotate(-Math.PI / 2);
+      graphics.scale(0.1, 0.3);
+      graphics.moveTo(-3, 1.5);
+      graphics.lineTo(2, 1);
+      graphics.lineTo(2, -1);
+      graphics.lineTo(-1, -1);
+      graphics.closePath();
+      graphics.fill();
+      graphics.restore();
+    }
+
+    function pikachuFace() {
+      //create pikachu's face
+      graphics.save();
+      //animation for left ear
+      if (earup) {
+        graphics.rotate(Math.PI / 9 * (0.001 * ear));
+        ear++;
+      }
+      if (earup == false) {
+        graphics.rotate(Math.PI / 9 * (0.001 * (ear)));
+        ear--;
+
+      }
+      if (ear == 50) {
+        earup = false;
+      }
+      if (ear == 0) {
+        earup = true;
+      }
+      //right ear
+      pikachuEar();
+      graphics.restore();
+
+      graphics.save();
+      //mirror for left ear
+
+      graphics.scale(-1, 1);
+
+      pikachuEar();
+      graphics.restore();
+      pikachuTopHead();
+
+      pikachuJaw();
+
+      pikachuCheek();
+
+      //draw right cheek
+      graphics.save();
+      graphics.scale(-1, 1);
+      pikachuCheek();
+      graphics.restore();
+
+      pikachuNose();
+      pikachuMouth();
+
+      //draw left eye
+      pikachuEye();
+      //draw right eye
+      graphics.save();
+      graphics.scale(-1, 1);
+      pikachuEye();
+      graphics.restore();
+    }
+
+    function pikachuTopHead() {
+      //create top of pikachu's head
+      graphics.save();
+      graphics.fillStyle = "rgb(247, 209, 34)";
+      filledCircle();
+      graphics.restore();
+    }
+
+    function pikachuJaw() {
+      //create pikachu's cheeks/ bottom of face: jaw
+      graphics.save();
+      graphics.scale(1.05, 0.6);
+      graphics.translate(0, -0.4);
+      graphics.fillStyle = "rgb(247, 209, 34)";
+      filledCircle();
+      graphics.restore();
+
+    }
+
+    function pikachuMouth() {
+      //create Pikachu's mouth 
+      graphics.save();
+      pikachuMouthHalf();
+      //mirror half of the mouth so the full mouth is created
+      graphics.scale(-1, 1);
+      pikachuMouthHalf();
+      graphics.restore();
+    }
+
+    function pikachuMouthHalf() {
+      //half of pikachu's mouth with a bezier curve
+      graphics.save();
+      graphics.lineWidth = 0.05;
+      graphics.beginPath();
+      //move to mouth area
+      graphics.translate(0, -0.25);
+
+      //decrease the size of mouth
+      graphics.scale(0.4, 0.4);
+
+      graphics.moveTo(0, 0.1);
+      graphics.bezierCurveTo(0.1, -0.1, 0.4, 0.05, 0.3, 0.1);
+
+      graphics.stroke();
+      graphics.restore();
+    }
+
+    function pikachuNose() {
+      //create pikachu's nose
+      graphics.save();
+      graphics.fillStyle = "rgb(67, 46, 26)";
+      //move to right position
+      graphics.translate(0, -0.09);
+      graphics.scale(0.03, -0.03);
+      filledTriangle(graphics);
+      graphics.restore();
+    }
+
+    function pikachuCheek() {
+      //create the rosy red cheeks
+      graphics.save();
+      graphics.fillStyle = "rgb(227, 77, 34)";
+      //move to right position
+      graphics.translate(0.41, -0.25);
+      graphics.scale(0.22, 0.22);
+      filledCircle();
+      graphics.restore();
+    }
+
+    function pikachuEye() {
+      //move eyeballto left side by default
+      graphics.save();
+      graphics.translate(-0.25, 0);
+      //for blinking animation
+      if (frameNumber % 100 == 0) {
+        blink = blink + 1;
+      }
+      if (blink % 10 == 0) {
+        graphics.scale(1, 0.075);
+      } else {
+        graphics.scale(1, 1);
+      }
+      pikachuEyeBall();
+
+
+      //for blinking animation
+      if (frameNumber % 100 == 0) {
+        blink2 = blink2 + 1;
+      }
+      if (blink2 % 10 == 0) {
+        graphics.scale(0, 0);
+
+      } else {
+        graphics.scale(1, 1);
+      }
+      pikachuPupil();
+      graphics.restore();
+    }
+
+    function pikachuEyeBall() {
+      //create the black part of the eye
+      graphics.save();
+      graphics.scale(0.2, 0.2);
+      graphics.fillStyle = "rgb(34, 23, 21)";
+
+      filledCircle();
+      graphics.restore();
+    }
+
+    function pikachuPupil() {
+      //create the white part of the eye
+      graphics.save();
+      graphics.translate(0.03, 0.03);
+      graphics.scale(0.1, 0.1);
+      graphics.fillStyle = "rgb(247, 247, 247)";
+      filledCircle();
+      graphics.restore();
+    }
+
+    function pikachuEar() {
+      //create the ear by adding the earlobe and black triangle 
+      pikachuEarLobe();
+      pikachuEarTriangle();
+    }
+
+    function pikachuEarTriangle() {
+      //bezier curve for black triangle on pikachu's ear
+      graphics.save();
+      graphics.translate(-1, 0.5);
+      graphics.rotate(Math.PI / 3.3);
+      graphics.lineWidth = 0.05;
+      graphics.beginPath();
+      graphics.scale(0.2, -0.4);
+      graphics.moveTo(1.2, 0.15);
+      graphics.bezierCurveTo(0.5, -1, 0.25, 0, 0.2, 0.125);
+      graphics.stroke();
+      graphics.fill();
+      graphics.restore();
+    }
+
+    function pikachuEarLobe() {
+      //yellow part of ear
+      graphics.save();
+      graphics.rotate(Math.PI / 3);
+      graphics.scale(0.3, 1);
+      graphics.translate(0.2, 0.7);
+      graphics.fillStyle = "rgb(247, 209, 34)";
+      filledCircle();
+      graphics.restore();
+    }
+
+    //=============================================================
+    //BODY
+
+
+    function pikachuBody() {
+
+      pikachuBelly();
+      //make left half of pikachu belly
+      graphics.save();
+      graphics.scale(-1, 1);
+      pikachuBelly();
+      graphics.restore();
+      pikachuCalf();
+
+      //right calf
+      graphics.save();
+      graphics.scale(-1, 1);
+      pikachuCalf();
+      graphics.restore();
+
+      //arms
+      pikachuArm();
+      pikachuRArm();
+
+      //feet
+      pikachuFeet();
+    }
+
+    function pikachuArm() {
+      //bezier curve for arm of pikachu
+      graphics.save();
+      graphics.beginPath();
+      graphics.translate(-0.49, -0.5);
+      graphics.rotate(-Math.PI / 85);
+      graphics.scale(-1, 0.15);
+      graphics.moveTo(0, -2);
+      graphics.bezierCurveTo(2, -1.5, 0.4, 0.5, -0.1, 0.5);
+      graphics.fillStyle = "rgb(241, 195, 33)";
+      graphics.fill();
+      graphics.restore();
+    }
+
+    function pikachuRArm() {
+      //create right arm
+      graphics.save();
+      graphics.beginPath();
+      graphics.translate(0.2, -0.66);
+      graphics.rotate(-Math.PI / 3.5);
+      graphics.scale(1, -0.15);
+      graphics.moveTo(0, -2);
+      graphics.bezierCurveTo(2, -1.5, 0.4, 0.5, -0.1, 0.5);
+      graphics.fillStyle = "rgb(241, 195, 33)";
+      graphics.fill();
+      graphics.restore();
+    }
+    function pikachuBelly() {
+      //bezier curve for belly of pikachu
+      graphics.save();
+      graphics.beginPath();
+      graphics.scale(0.7, 0.8);
+      graphics.moveTo(0, -2);
+      graphics.bezierCurveTo(2, -2, 0.25, 0, 0, 0.1);
+      graphics.stroke();
+      graphics.fillStyle = "rgb(241, 195, 33)";
+      graphics.fill();
+      graphics.restore();
+    }
+
+    function pikachuCalf() {
+      //create the circular calves
+      graphics.save();
+      graphics.rotate(-Math.PI / 12);
+      graphics.translate(0, -1.3);
+      graphics.scale(0.75, 0.75);
+      graphics.fillStyle = "rgb(241, 195, 33)";
+      filledCircle();
+      graphics.restore();
+    }
+
+    function footAnimation() {
+      //foot animation
+
+      if (feetmove) {
+        graphics.rotate(Math.PI / 30 * (0.01) * feet);
+        feet++;
+      }
+
+      if (!feetmove) {
+        graphics.rotate(Math.PI / 30 * (0.01) * feet);
+        feet--;
+      }
+      if (feet == 100) {
+        feetmove = false;
+      }
+      if (feet == 0) {
+        feetmove = true;
+      }
+
+    }
+
+
+    function pikachuFeet() {
+      //create both the feet
+      graphics.save();
+      graphics.translate(0.45, -1.3);
+      footAnimation();
+      pikachuFoot();
+      graphics.restore();
+
+      //left foot
+      graphics.save();
+      graphics.translate(-0.45, -1.3);
+      graphics.scale(-1, 1);
+
+      footAnimation();
+      pikachuFoot();
+      graphics.restore();
+
+    }
+    function pikachuFoot() {
+      graphics.save();
+      graphics.scale(0.3, 0.75);
+      graphics.fillStyle = "rgb(247, 209, 34)";
+
+      filledCircle();
+      graphics.restore();
+
+      //add toes to feet
+      pikachuToes();
+
+
+    }
+
+    function pikachuToes() {
+      //toe 1
+      graphics.save();
+      graphics.lineWidth = 0.02;
+      graphics.strokeStyle = "rgb(134, 87, 54)";
+      graphics.save();
+      graphics.translate(-0.03, 0.31);
+      graphics.rotate(Math.PI / 2);
+      graphics.scale(0.1, 1);
+      line();
+      graphics.restore();
+
+      //toe 2
+      graphics.save();
+      graphics.translate(0.03, 0.31);
+      graphics.rotate(Math.PI / 2);
+      graphics.scale(0.1, 1);
+      line();
+      graphics.restore();
+      graphics.restore();
+
+
+    }
+
+    //------------------- Some methods for drawing basic shapes. ----------------
+
+    function line() { // Draws a line from (-0.5,0) to (0.5,0)
+      graphics.beginPath();
+      graphics.moveTo(-0.5, 0);
+      graphics.lineTo(0.5, 0);
+      graphics.stroke();
+    }
+
+    function rect() { // Strokes a square, size = 1, center = (0,0)
+      graphics.strokeRect(-0.5, -0.5, 1, 1);
+    }
+
+    function filledRect() { // Fills a square, size = 1, center = (0,0)
+      graphics.fillRect(-0.5, -0.5, 1, 1);
+    }
+
+    function circle() { // Strokes a circle, diameter = 1, center = (0,0)
+      graphics.beginPath();
+      graphics.arc(0, 0, 0.5, 0, 2 * Math.PI);
+      graphics.stroke();
+    }
+
+    function filledCircle() { // Fills a circle, diameter = 1, center = (0,0)
+      graphics.beginPath();
+      graphics.arc(0, 0, 0.5, 0, 2 * Math.PI);
+      graphics.fill();
+    }
+
+    function filledTriangle(g2) {// Filled Triangle, width 1, height 1, center of base at (0,0)
+      g2.beginPath();
+      g2.moveTo(-0.5, 0);
+      g2.lineTo(0.5, 0);
+      g2.lineTo(0, 1);
+      g2.closePath();
+      g2.fill();
+    }
+
+
+
+
+    // ------------------------------- graphics support functions --------------------------
+
+    /**
+      * Draw one frame of the animation.  Probably doesn't need to be changed,
+      * except maybe to change the setting of preserveAspect in applyLimits().
+      */
+    function draw() {
+      graphics.save();  // to make sure changes don't carry over from one call to the next
+      graphics.fillStyle = BACKGROUND;  // background color
+      graphics.fillRect(0, 0, canvas.width, canvas.height);
+      graphics.fillStyle = "black";
+      applyLimits(graphics, X_LEFT, X_RIGHT, Y_TOP, Y_BOTTOM, false);
+      graphics.lineWidth = pixelSize;  // Use 1 pixel as the default line width
+      drawWorld();
+      graphics.restore();
+    }
+
+    /**
+     * Applies a coordinate transformation to the graphics context, to map
+     * xleft,xright,ytop,ybottom to the edges of the canvas.  This is called
+     * by draw().  This does not need to be changed.
+     */
+    function applyLimits(g, xleft, xright, ytop, ybottom, preserveAspect) {
+      var width = canvas.width;   // The width of this drawing area, in pixels.
+      var height = canvas.height; // The height of this drawing area, in pixels.
+      if (preserveAspect) {
+        // Adjust the limits to match the aspect ratio of the drawing area.
+        var displayAspect = Math.abs(height / width);
+        var requestedAspect = Math.abs((ybottom - ytop) / (xright - xleft));
+        var excess;
+        if (displayAspect > requestedAspect) {
+          excess = (ybottom - ytop) * (displayAspect / requestedAspect - 1);
+          ybottom += excess / 2;
+          ytop -= excess / 2;
+        }
+        else if (displayAspect < requestedAspect) {
+          excess = (xright - xleft) * (requestedAspect / displayAspect - 1);
+          xright += excess / 2;
+          xleft -= excess / 2;
+        }
+      }
+      var pixelWidth = Math.abs((xright - xleft) / width);
+      var pixelHeight = Math.abs((ybottom - ytop) / height);
+      pixelSize = Math.min(pixelWidth, pixelHeight);
+      g.scale(width / (xright - xleft), height / (ybottom - ytop));
+      g.translate(-xleft, -ytop);
+    }
+
+
+    //------------------ Animation framework ------------------------------
+
+    var running = false;  // This is set to true when animation is running
+
+    function frame() {
+      if (running) {
+        // Draw one frame of the animation, and schedule the next frame.
+        updateFrame();
+        draw();
+        requestAnimationFrame(frame);
+      }
+    }
+
+    function doAnimationCheckbox() {
+      var shouldRun = document.getElementById("animateCheck").checked;
+      if (shouldRun != running) {
+        running = shouldRun;
+        if (running)
+          requestAnimationFrame(frame);
+      }
+    }
+
+    //----------------------- initialization -------------------------------
+
+    function init() {
+      canvas = document.getElementById("thecanvas");
+      if (!canvas.getContext) {
+        document.getElementById("message").innerHTML = "ERROR: Canvas not supported";
+        return;
+      }
+      graphics = canvas.getContext("2d");
+      document.getElementById("animateCheck").checked = false;
+      document.getElementById("animateCheck").onchange = doAnimationCheckbox;
+      draw();
+    }
+
+  </script>
+
+</head>
+
+<body onload="init()" style="background-color:#EEEEEE">
+
+  <h3>Subroutine Hierarchy</h3>
+
+  <noscript>
+    <p><b style="color:red">Error: This page requires JavaScript, but it is not available.</b></p>
+  </noscript>
+
+  <p id="message"><label><input type="checkbox" id="animateCheck"><b>Run the Animation</b></label></p>
+
+  <div style="float:left; border: 2px solid black">
+    <canvas id="thecanvas" width="800" height="600" style="display:block"></canvas>
+  </div>
+
+
+</body>
+
+</html>
